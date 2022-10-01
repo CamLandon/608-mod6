@@ -1,0 +1,328 @@
+base) C:\Users\chlan>cd C:\Uswers\chlan\OneDrive\Documents\Education\44-608\IntroToPython\examples\ch17\sql
+The system cannot find the path specified.
+
+(base) C:\Users\chlan>cd C:\Users\chlan\OneDrive\Documents\Education\44-608\IntroToPython\examples\ch17\sql
+
+(base) C:\Users\chlan\OneDrive\Documents\Education\44-608\IntroToPython\examples\ch17\sql>sqlite3 books.db < books.sql
+
+(base) C:\Users\chlan\OneDrive\Documents\Education\44-608\IntroToPython\examples\ch17\sql>ipython
+Python 3.9.12 (main, Apr  4 2022, 05:22:27) [MSC v.1916 64 bit (AMD64)]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 8.4.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]: import sqlite3
+
+In [2]: connection = sqlite3.connect('books.db')
+
+In [3]: import pandas as pd
+
+In [4]: pd.options.display.max_columns = 10
+
+In [5]: pd.read_sql('SELECT * FROM authors', connection,
+   ...:             index_col=['id'])
+Out[5]:
+        first    last
+id
+1        Paul  Deitel
+2      Harvey  Deitel
+3       Abbey  Deitel
+4         Dan   Quirk
+5   Alexander    Wald
+
+In [6]: pd.options.display.max_columns = 10
+
+In [7]: pd.read_sql('SELECT * FROM isbn', connection,
+   ...:             index_col=['id'])
+---------------------------------------------------------------------------
+OperationalError                          Traceback (most recent call last)
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:2020, in SQLiteDatabase.execute(self, *args, **kwargs)
+   2019 try:
+-> 2020     cur.execute(*args, **kwargs)
+   2021     return cur
+
+OperationalError: no such table: isbn
+
+The above exception was the direct cause of the following exception:
+
+DatabaseError                             Traceback (most recent call last)
+Input In [7], in <cell line: 1>()
+----> 1 pd.read_sql('SELECT * FROM isbn', connection,
+      2             index_col=['id'])
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:566, in read_sql(sql, con, index_col, coerce_float, params, parse_dates, columns, chunksize)
+    563 pandas_sql = pandasSQL_builder(con)
+    565 if isinstance(pandas_sql, SQLiteDatabase):
+--> 566     return pandas_sql.read_query(
+    567         sql,
+    568         index_col=index_col,
+    569         params=params,
+    570         coerce_float=coerce_float,
+    571         parse_dates=parse_dates,
+    572         chunksize=chunksize,
+    573     )
+    575 try:
+    576     _is_table_name = pandas_sql.has_table(sql)
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:2080, in SQLiteDatabase.read_query(self, sql, index_col, coerce_float, params, parse_dates, chunksize, dtype)
+   2068 def read_query(
+   2069     self,
+   2070     sql,
+   (...)
+   2076     dtype: DtypeArg | None = None,
+   2077 ):
+   2079     args = _convert_params(sql, params)
+-> 2080     cursor = self.execute(*args)
+   2081     columns = [col_desc[0] for col_desc in cursor.description]
+   2083     if chunksize is not None:
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:2032, in SQLiteDatabase.execute(self, *args, **kwargs)
+   2029     raise ex from inner_exc
+   2031 ex = DatabaseError(f"Execution failed on sql '{args[0]}': {exc}")
+-> 2032 raise ex from exc
+
+DatabaseError: Execution failed on sql 'SELECT * FROM isbn': no such table: isbn
+
+In [8]: pd.read_sql('SELECT * FROM titles', connection,
+   ...:    ...:             index_col=['id'])
+---------------------------------------------------------------------------
+KeyError                                  Traceback (most recent call last)
+Input In [8], in <cell line: 1>()
+----> 1 pd.read_sql('SELECT * FROM titles', connection,
+      2             index_col=['id'])
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:566, in read_sql(sql, con, index_col, coerce_float, params, parse_dates, columns, chunksize)
+    563 pandas_sql = pandasSQL_builder(con)
+    565 if isinstance(pandas_sql, SQLiteDatabase):
+--> 566     return pandas_sql.read_query(
+    567         sql,
+    568         index_col=index_col,
+    569         params=params,
+    570         coerce_float=coerce_float,
+    571         parse_dates=parse_dates,
+    572         chunksize=chunksize,
+    573     )
+    575 try:
+    576     _is_table_name = pandas_sql.has_table(sql)
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:2097, in SQLiteDatabase.read_query(self, sql, index_col, coerce_float, params, parse_dates, chunksize, dtype)
+   2094 data = self._fetchall_as_list(cursor)
+   2095 cursor.close()
+-> 2097 frame = _wrap_result(
+   2098     data,
+   2099     columns,
+   2100     index_col=index_col,
+   2101     coerce_float=coerce_float,
+   2102     parse_dates=parse_dates,
+   2103     dtype=dtype,
+   2104 )
+   2105 return frame
+
+File ~\miniconda3\lib\site-packages\pandas\io\sql.py:158, in _wrap_result(data, columns, index_col, coerce_float, parse_dates, dtype)
+    155 frame = _parse_date_columns(frame, parse_dates)
+    157 if index_col is not None:
+--> 158     frame.set_index(index_col, inplace=True)
+    160 return frame
+
+File ~\miniconda3\lib\site-packages\pandas\util\_decorators.py:311, in deprecate_nonkeyword_arguments.<locals>.decorate.<locals>.wrapper(*args, **kwargs)
+    305 if len(args) > num_allow_args:
+    306     warnings.warn(
+    307         msg.format(arguments=arguments),
+    308         FutureWarning,
+    309         stacklevel=stacklevel,
+    310     )
+--> 311 return func(*args, **kwargs)
+
+File ~\miniconda3\lib\site-packages\pandas\core\frame.py:5500, in DataFrame.set_index(self, keys, drop, append, inplace, verify_integrity)
+   5497                 missing.append(col)
+   5499 if missing:
+-> 5500     raise KeyError(f"None of {missing} are in the columns")
+   5502 if inplace:
+   5503     frame = self
+
+KeyError: "None of ['id'] are in the columns"
+
+In [9]: pd.read_sql('SELECT * FROM authors', connection,^M
+   ...:    ...:             index_col=['id'])
+Out[9]:
+        first    last
+id
+1        Paul  Deitel
+2      Harvey  Deitel
+3       Abbey  Deitel
+4         Dan   Quirk
+5   Alexander    Wald
+
+In [10]: pd.read_sql('SELECT * FROM titles', connection)
+Out[10]:
+         isbn                             title  edition copyright
+0  0135404673     Intro to Python for CS and DS        1      2020
+1  0132151006     Internet & WWW How to Program        5      2012
+2  0134743350               Java How to Program       11      2018
+3  0133976890                  C How to Program        8      2016
+4  0133406954  Visual Basic 2012 How to Program        6      2014
+5  0134601548          Visual C# How to Program        6      2017
+6  0136151574         Visual C++ How to Program        2      2008
+7  0134448235                C++ How to Program       10      2017
+8  0134444302            Android How to Program        3      2017
+9  0134289366         Android 6 for Programmers        3      2016
+
+In [11]: pd.read_sql('SELECT * FROM author_ISBN', connection)
+Out[11]:
+    id        isbn
+0    1  0134289366
+1    2  0134289366
+2    5  0134289366
+3    1  0135404673
+4    2  0135404673
+5    1  0132151006
+6    2  0132151006
+7    3  0132151006
+8    1  0134743350
+9    2  0134743350
+10   1  0133976890
+11   2  0133976890
+12   1  0133406954
+13   2  0133406954
+14   3  0133406954
+15   1  0134601548
+16   2  0134601548
+17   1  0136151574
+18   2  0136151574
+19   4  0136151574
+20   1  0134448235
+21   2  0134448235
+22   1  0134444302
+23   2  0134444302
+
+In [12]: pd.read_sql("""SELECT title, edition, copyright
+    ...:                 FROM titles
+    ...:                 WHERE copyright > '2016'""", connection)
+Out[12]:
+                           title  edition copyright
+0  Intro to Python for CS and DS        1      2020
+1            Java How to Program       11      2018
+2       Visual C# How to Program        6      2017
+3             C++ How to Program       10      2017
+4         Android How to Program        3      2017
+
+In [13]: pd.read_sql("""SELECT title, edition, copyright
+    ...:                 FROM titles
+    ...:                 WHERE edition < '2'""", connection)
+Out[13]:
+                           title  edition copyright
+0  Intro to Python for CS and DS        1      2020
+
+In [14]: pd.read_sql("""SELECT title, edition, copyright^M
+    ...:     ...:                 FROM titles^M
+    ...:     ...:                 WHERE edition > '2'""", connection)
+Out[14]:
+                              title  edition copyright
+0     Internet & WWW How to Program        5      2012
+1               Java How to Program       11      2018
+2                  C How to Program        8      2016
+3  Visual Basic 2012 How to Program        6      2014
+4          Visual C# How to Program        6      2017
+5                C++ How to Program       10      2017
+6            Android How to Program        3      2017
+7         Android 6 for Programmers        3      2016
+
+In [15]: pd.read_sql("""SELECT id, first, last^M
+    ...:     ...:                 FROM authors^M
+    ...:     ...:                 WHERE last LIKE 'D%'"""
+    ...:                         connection, index_col=['id])
+  Input In [15]
+    connection, index_col=['id])
+    ^
+SyntaxError: invalid syntax
+
+
+In [16]:  pd.read_sql("""SELECT id, first, last^M^M
+    ...:     ...:     ...:                 FROM authors^M^M
+    ...:     ...:     ...:                 WHERE last LIKE 'D%'"""^M
+    ...:     ...:                         connection, index_col=['id'])
+  Input In [16]
+    connection, index_col=['id'])
+    ^
+SyntaxError: invalid syntax
+
+
+In [17]: v pd.read_sql("""SELECT id, first, last^M^M
+    ...:     ...:     ...:                 FROM authors^M^M
+    ...:     ...:     ...:                 WHERE last LIKE 'D%'""",
+    ...:                 connection, index_col=['id])^Z
+  Input In [17]
+    v pd.read_sql("""SELECT id, first, last^M
+      ^
+SyntaxError: invalid syntax
+
+
+In [18]: pd.read_sql("""SELECT id, first, last
+    ...:                 FROM authors
+    ...:                 WHERE last LIKE 'D%'""",
+    ...:                 connection, index_col=['id'])
+Out[18]:
+     first    last
+id
+1     Paul  Deitel
+In [19]: pd.read_sql("""SELECT id, first, last
+    ...:                 FROM authors
+    ...:                 WHERE first LIKE '_a%'""",
+    ...:                 connection, index_col=['id'])
+Out[19]:
+     first    last
+id
+1     Paul  Deitel
+2   Harvey  Deitel
+4      Dan   Quirk
+
+In [20]: pd.read_sql("""SELECT id, first, last
+    ...:                 FROM authors
+    ...:                 WHERE first LIKE '_b%'""",
+    ...:                 connection, index_col=['id'])
+Out[20]:
+    first    last
+id
+3   Abbey  Deitel
+
+In [21]: pd.read_sql('SELECT title FROM titles ORDER BY title ASC',
+    ...:             connection)
+Out[21]:
+                              title
+0         Android 6 for Programmers
+1            Android How to Program
+2                  C How to Program
+3                C++ How to Program
+4     Internet & WWW How to Program
+5     Intro to Python for CS and DS
+6               Java How to Program
+7  Visual Basic 2012 How to Program
+8          Visual C# How to Program
+9         Visual C++ How to Program
+
+In [22]: pd.read_sql("""SELECT id, first, last
+    ...:                 FROM authors
+    ...:                 ORDER BY last, first""",
+    ...:                 connection, index_col=['id'])
+Out[22]:
+        first    last
+id
+3       Abbey  Deitel
+2      Harvey  Deitel
+1        Paul  Deitel
+4         Dan   Quirk
+5   Alexander    Wald
+
+In [23]: pd.read_sql("""SELECT id, first, last
+    ...:                 FROM authors
+    ...:                 ORDER BY last DESC, first ASC""",
+    ...:                 connection, index_col=['id'])
+Out[23]:
+        first    last
+id
+5   Alexander    Wald
+4         Dan   Quirk
+3       Abbey  Deitel
+2      Harvey  Deitel
+1        Paul  Deitel
+
+In [24]: Cameron Landon 9.30.22 8:40 PM
